@@ -1,8 +1,11 @@
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_mail import Mail
 from flask_mail import Message
 from config import DevelopmentConfig
+import uuid ### libreria para generar id
+
+
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 CORS(app)
@@ -30,7 +33,13 @@ def newForm():
             string +='\n     <br>'+str(j['title'])
     sendMail('Respuestas encuesta',string,['dapiyih456@idurse.com'])
     print(string)
-    return data
+
+    ### GENERANDO LINK PARA ENCUESTA 
+    formId=uuid.uuid1().hex
+    link="http://localhost:3000/form/"+formId
+
+    ### retorna el id del formulario para ocuparlo en react
+    return jsonify(formId)
 
 def sendMail(asunto,mensaje, destinatarios):
     msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
