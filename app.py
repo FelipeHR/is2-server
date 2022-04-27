@@ -127,4 +127,4 @@ def sendMail(asunto,mensaje, destinatarios):
     mail.send(msg)
 
 mail.init_app(app)
-app.run(debug = True)
+app.run(debug = True, port=5002)
