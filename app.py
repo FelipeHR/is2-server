@@ -37,6 +37,47 @@ def holaMundo():
     print('hola mundo!')
     return 'hola mundo!'
 
+@app.route('/getForm/<formID>', methods = ["GET"])
+def getForm(formID):
+    cursor = mysql.connection.cursor()
+
+    cursor.execute('SELECT Nombre_encuesta FROM Encuesta WHERE Id_encuesta = %s', (formID,))  
+    titulo = cursor.fetchone()
+    
+    cursor.execute('SELECT Descripcion FROM Encuesta WHERE Id_encuesta = %s', (formID,))
+    descripcion = cursor.fetchone()
+
+    preguntas = [{}]
+    alternativas = [{}]
+    preguntas.pop()
+    alternativas.pop()
+    cursor.execute('SELECT Id_pregunta FROM Encuesta_Pregunta WHERE Id_encuesta = %s', (formID,))
+    preguntasID = cursor.fetchall()
+    
+    for i in preguntasID:
+        cursor.execute('SELECT Enunciado FROM Pregunta WHERE Id_pregunta = %s', (i,))
+        tit = cursor.fetchone()
+        cursor.execute('SELECT Id_alternativa FROM Pregunta_Alternativa WHERE Id_pregunta = %s', (i,))
+        alternativasID = cursor.fetchall()
+        #print("\n\nSe seleccionaron los id: ")
+        #print(alternativasID)
+        for j in alternativasID:
+            cursor.execute('SELECT Enunciado FROM Alternativa WHERE Id_alternativa = %s', (j,))
+            alternativas.append({'title' : cursor.fetchone(), 'id' : j})
+            #print("\nSe guardaron las alternativas de ID: ")
+            #print(j)
+        preguntas.append({'title' : tit, 'id' : i, 'alter' : alternativas.copy()})
+        alternativas.clear()
+    #print(preguntas)
+
+    message = {
+        'title' : titulo,
+        'description' : descripcion,
+        'preguntas' : preguntas
+    }
+    #print(message)
+    return jsonify(message)
+
 
 @app.route("/newForm", methods=["POST"])
 def newForm():
