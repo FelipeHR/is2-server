@@ -123,7 +123,9 @@ def newForm():
 
 
     ### retorna el id del formulario para ocuparlo en react
-    return jsonify(formId)
+    response = jsonify(formId)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 def sendMail(asunto,mensaje, destinatarios):
     msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
