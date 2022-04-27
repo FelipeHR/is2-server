@@ -1,7 +1,7 @@
 from audioop import cross
 from random import random
 from flask import Flask, jsonify, request
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 from flask_mail import Mail
 from flask_mail import Message
 from flask import Flask,render_template, request
@@ -12,8 +12,8 @@ import uuid ### libreria para generar id
 
 
 app = Flask(__name__)
-app.config.from_object(DevelopmentConfig)
 CORS(app)
+app.config.from_object(DevelopmentConfig)
 mail = Mail(app)
 mysql = MySQL(app)
 @app.route('/')
@@ -79,9 +79,13 @@ def getForm(formID):
     #print(message)
     return jsonify(message)
 
+@app.route("/newRespuesta", methods=["POST"])
+def newRespuesta():
+    print("SERVERRRR")
+    response = jsonify("hola mundo!")
+    return(response)
 
 @app.route("/newForm", methods=["POST"])
-@cross_origin()
 def newForm():
     data = request.get_json()
     cursor = mysql.connection.cursor()
