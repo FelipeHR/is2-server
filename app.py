@@ -1,6 +1,7 @@
+from audioop import cross
 from random import random
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_mail import Mail
 from flask_mail import Message
 from flask import Flask,render_template, request
@@ -80,6 +81,7 @@ def getForm(formID):
 
 
 @app.route("/newForm", methods=["POST"])
+@cross_origin()
 def newForm():
     data = request.get_json()
     cursor = mysql.connection.cursor()
