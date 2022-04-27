@@ -18,18 +18,6 @@ mail = Mail(app)
 mysql = MySQL(app)
 @app.route('/')
 def main():
-    cursor = mysql.connection.cursor()
-    dato = "UdeC"
-    cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(dato,))
-    correos = cursor.fetchall()
-    listaCorreos = []
-    for i in correos:
-        cursor.execute('SELECT Participa FROM `Usuario` WHERE Correo=%s',(i[0],))
-        participa = cursor.fetchall()[0][0]
-        if participa == 1:
-            listaCorreos.append(i[0])
-    sendMail('prueba',"holi, es una prueba",listaCorreos)
-    print(listaCorreos)
     return "Hello Flask!"
 
 
