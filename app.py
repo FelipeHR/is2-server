@@ -108,8 +108,8 @@ def newForm():
             listaCorreos.append(i[0])
     
     cursor.close()
-    link="http://localhost:3000/form/"+formId
-    sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
+    link="http://localhost:3000/#/form/"+formId
+    ##sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
     
     #sendMail('Respuestas encuesta',string,['dapiyih456@idurse.com'])
     ### GENERANDO LINK PARA ENCUESTA 
