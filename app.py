@@ -69,8 +69,26 @@ def getForm(formID):
 
 @app.route("/newRespuesta", methods=["POST"])
 def newRespuesta():
-    print("SERVERRRR")
+    data = request.get_json()
+    print ("ok")
+    print (data)
+    x = 0
+    for i in data:
+        print ("alternativa "+ str(x) + ": " + str(i))
+        x+=1
     response = jsonify("hola mundo!")
+
+    
+    cursor = mysql.connection.cursor()
+    nAnswers= cursor.execute('SELECT * FROM `Respuesta`')
+    formId=uuid.uuid1().hex
+
+    cursor.execute('INSERT INTO `Respuesta` VALUES(%s)', (str(nAnswers)))
+    for i in data:
+        cursor.execute('INSERT INTO `Alternativa_Respuesta` VALUES (%s, %s)', (str(i[0]), str(nAnswers)) )
+
+    mysql.connection.commit()
+    cursor.close()
     return(response)
 
 @app.route("/newForm", methods=["POST"])
