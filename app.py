@@ -26,6 +26,30 @@ def holaMundo():
     print('hola mundo!')
     return 'hola mundo!'
 
+
+@app.route('/getForms/<empresa>', methods=['GET'])
+def getForms(empresa):
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT Id_encuesta FROM Empresa_Encuesta WHERE Id_empresa = %s', (empresa,))
+    data = cur.fetchall()
+    encuestas = {}
+    index = 1
+    for i in data:
+        cur.execute('SELECT * FROM Encuesta WHERE Id_encuesta = %s', (i[0],))
+        consulta = cur.fetchall()
+        fecha = consulta[0][3].split('-')
+        encuesta = {'title': consulta[0][1], 'description': consulta[0][2], 'id': 'https://is2-client.herokuapp.com/#/form/'+consulta[0][0], 'date': {'year': fecha[0], 'month': fecha[1], 'day': fecha[2]}}
+        encuestas["Encuesta "+str(index)] = encuesta
+        index += 1
+    print(len(data))
+    print(len(encuestas))
+    cur.close()
+    return jsonify(encuestas)
+
+
+
+
+
 @app.route('/getForm/<formID>', methods = ["GET"])
 def getForm(formID):
     cursor = mysql.connection.cursor()
@@ -66,6 +90,9 @@ def getForm(formID):
     }
     #print(message)
     return jsonify(message)
+
+
+
 
 @app.route("/newRespuesta", methods=["POST"])
 def newRespuesta():
