@@ -175,10 +175,31 @@ def newEmpresa():
     cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
     empresa = []
     empresa = cursor.fetchall()
-    if empresa.size() == 0:
+    if empresa.size() != 0:
         return jsonify("error")
-    else:
-        cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
+    cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
+    ## Deben asociarse todos los correos disponibles a esta empresa
+    mysql.connection.commit()
+    cursor.close()
+
+    response = jsonify("Usuario agregado con exito")
+    return response
+
+@app.route("/newUser", methods = ["POST"])
+def newUser():
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT Correo FROM 'Usuario'")
+    usuarios = []
+    usuarios = cursor.fetchall()
+    if usuarios.size() != 0:
+        return jsonify("error")
+    cursor.execute("INSERT INTO 'Usuario' VALUES(%s,%s)", str(data['Correo']), "1")
+    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
+    for i in cursor.fetchall():
+        cursor.execute("INSERT INTO 'Empresa_Usuario' VALUES(%s,%s)", str(i), str(data['Correo']))
+    
     mysql.connection.commit()
     cursor.close()
 
