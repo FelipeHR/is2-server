@@ -9,6 +9,7 @@ from flask_mysqldb import MySQL
 from config import DevelopmentConfig
 from datetime import datetime
 import uuid ### libreria para generar id
+import hashlib
 
 
 app = Flask(__name__)
@@ -166,10 +167,56 @@ def newForm():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route("/newEmpresa", methods = ["POST"])
+def newEmpresa():
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
+    empresa = []
+    empresa = cursor.fetchall()
+    if empresa.size() != 0:
+        return jsonify("error")
+    cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
+    ## Deben asociarse todos los correos disponibles a esta empresa
+    mysql.connection.commit()
+    cursor.close()
+
+    response = jsonify("Usuario agregado con exito")
+    return response
+
+@app.route("/newUser", methods = ["POST"])
+def newUser():
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT Correo FROM 'Usuario'")
+    usuarios = []
+    usuarios = cursor.fetchall()
+    if usuarios.size() != 0:
+        return jsonify("error")
+    cursor.execute("INSERT INTO 'Usuario' VALUES(%s,%s)", str(data['Correo']), "1")
+    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
+    for i in cursor.fetchall():
+        cursor.execute("INSERT INTO 'Empresa_Usuario' VALUES(%s,%s)", str(i), str(data['Correo']))
+    
+    mysql.connection.commit()
+    cursor.close()
+
+    response = jsonify("Usuario agregado con exito")
+    return response
+
+
 def sendMail(asunto,mensaje, destinatarios):
-    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
-    msg.body = mensaje
-    mail.send(msg)
+### Ciclo para enviar 1 a 1 los correos con el link personalizado para darse de baja. Para volver de hash a correo es HASH.hexdigest()
+    for i in destinatarios:
+        msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = i)
+        msg.body = mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i)
+        mail.send(msg) 
+### Lo siguiente lo comente porque enviaba el correo masivo
+#    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
+#    msg.body = mensaje
+#    mail.send(msg)
 
 mail.init_app(app)
 app.run(debug = True)
