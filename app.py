@@ -167,6 +167,25 @@ def newForm():
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+@app.route("/newEmpresa", methods = ["POST"])
+def newEmpresa():
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
+    empresa = []
+    empresa = cursor.fetchall()
+    if empresa.size() == 0:
+        return jsonify("error")
+    else:
+        cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
+    mysql.connection.commit()
+    cursor.close()
+
+    response = jsonify("Usuario agregado con exito")
+    return response
+
+
 def sendMail(asunto,mensaje, destinatarios):
 ### Ciclo para enviar 1 a 1 los correos con el link personalizado para darse de baja. Para volver de hash a correo es HASH.hexdigest()
     for i in destinatarios:
