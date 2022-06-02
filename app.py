@@ -9,6 +9,7 @@ from flask_mysqldb import MySQL
 from config import DevelopmentConfig
 from datetime import datetime
 import uuid ### libreria para generar id
+import hashlib
 
 
 app = Flask(__name__)
@@ -167,9 +168,15 @@ def newForm():
     return response
 
 def sendMail(asunto,mensaje, destinatarios):
-    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
-    msg.body = mensaje
-    mail.send(msg)
+### Ciclo para enviar 1 a 1 los correos con el link personalizado para darse de baja. Para volver de hash a correo es HASH.hexdigest()
+    for i in destinatarios:
+        msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = i)
+        msg.body = mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i)
+        mail.send(msg) 
+### Lo siguiente lo comente porque enviaba el correo masivo
+#    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
+#    msg.body = mensaje
+#    mail.send(msg)
 
 mail.init_app(app)
 app.run(debug = True)
