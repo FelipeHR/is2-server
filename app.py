@@ -38,7 +38,7 @@ def getForms(empresa):
         cur.execute('SELECT * FROM Encuesta WHERE Id_encuesta = %s', (i[0],))
         consulta = cur.fetchall()
         fecha = consulta[0][3].split('-')
-        encuesta = {'title': consulta[0][1], 'description': consulta[0][2], 'id': 'https://is2-client.herokuapp.com/#/form/'+consulta[0][0], 'date': {'year': fecha[0], 'month': fecha[1], 'day': fecha[2]}}
+        encuesta = {'title': consulta[0][1], 'description': consulta[0][2], 'id': consulta[0][0], 'date': {'year': fecha[0], 'month': fecha[1], 'day': fecha[2]}}
         encuestas["Encuesta "+str(index)] = encuesta
         index += 1
     print(len(data))
