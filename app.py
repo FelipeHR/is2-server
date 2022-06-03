@@ -162,7 +162,7 @@ def newForm(empresa):
     mensaje = "Participa en la siguiente encuesta!\n" + link
     ## Nuevo ciclo para los correos
     #for i in listaCorreos:
-    #    sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i), i)
+    #    sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i.encode('utf-8)).hexdigest(), i)
     ## 
 
     ##sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
@@ -182,13 +182,11 @@ def newEmpresa():
     data = request.get_json()
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
-    empresa = []
+    cursor.execute("SELECT * FROM UsuarioEmpresa WHERE Id_Empresa='{}'".format(data['Correo']))
     empresa = cursor.fetchall()
-    if empresa.size() != 0:
-        return jsonify("error")
-    cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
-    ## Deben asociarse todos los correos disponibles a esta empresa
+    if len(empresa) != 0:
+        return jsonify("correo ya registrada")
+    cursor.execute("INSERT INTO UsuarioEmpresa VALUES('{}','{}','{}')".format(data['Username'],data['Clave'],data['Correo']))
     mysql.connection.commit()
     cursor.close()
 
@@ -200,15 +198,15 @@ def newUser():
     data = request.get_json()
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT Correo FROM 'Usuario'")
-    usuarios = []
+    cursor.execute("SELECT * FROM Usuario WHERE Correo='{}'".format(data['Correo']))
     usuarios = cursor.fetchall()
-    if usuarios.size() != 0:
-        return jsonify("error")
-    cursor.execute("INSERT INTO 'Usuario' VALUES(%s,%s)", str(data['Correo']), "1")
-    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
+    if len(usuarios) != 0:
+        return jsonify("Correo ya registrado")
+
+    cursor.execute("INSERT INTO Usuario VALUES('{}','{}','{}')".format(data['Correo'],1,hashlib.md5(data['Correo'].encode('utf-8')).hexdigest()))
+    cursor.execute("SELECT Id_empresa FROM UsuarioEmpresa")
     for i in cursor.fetchall():
-        cursor.execute("INSERT INTO 'Empresa_Usuario' VALUES(%s,%s)", str(i), str(data['Correo']))
+        cursor.execute("INSERT INTO Empresa_Usuario VALUES('{}','{}')".format(i[0],data['Correo']))
     
     mysql.connection.commit()
     cursor.close()
@@ -221,6 +219,14 @@ def sendMail(asunto,mensaje, destinatarios):
     msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
     msg.body = mensaje
     mail.send(msg)
+
+@app.route("/unsuscribe/<md5>")
+def unsuscribe(md5):
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE Usuario SET Participa = 0 WHERE md5_correo = '{}'".format(md5))
+    mysql.connection.commit()
+    cursor.close()
+    return "correo dado de baja"
 
 mail.init_app(app)
 app.run(debug = True)
