@@ -31,7 +31,9 @@ def holaMundo():
 @app.route('/getForms/<empresa>', methods=['GET'])
 def getForms(empresa):
     cur = mysql.connection.cursor()
-    cur.execute('SELECT Id_encuesta FROM Empresa_Encuesta WHERE Id_empresa = %s', (empresa,))
+    cur.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    idEmpresa = cur.fetchone()
+    cur.execute('SELECT Id_encuesta FROM Empresa_Encuesta WHERE Id_Empresa = %s', (idEmpresa[0],))
     data = cur.fetchall()
     encuestas = {}
     index = 1
@@ -123,10 +125,12 @@ def newRespuesta():
 def newForm(empresa):
     data = request.get_json()
     cursor = mysql.connection.cursor()
+    cursor.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    idEmpresa = cursor.fetchone()[0]
     print(empresa)
     formId=uuid.uuid1().hex
     link="http://localhost:3000/form/"+formId
-    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(empresa,formId))
+    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(idEmpresa,formId))
     cursor.execute('INSERT INTO `Encuesta` VALUES(%s,%s,%s,%s)',(formId,str(data['title']),
         str(data['description']),str(datetime.today().strftime('%Y-%m-%d'))))
     npreguntas = cursor.execute('SELECT * FROM `Pregunta`')
@@ -144,7 +148,7 @@ def newForm(empresa):
     mysql.connection.commit()
     cursor.close()
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(empresa,))
+    cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(idEmpresa,))
     correos = cursor.fetchall()
     listaCorreos = []
     for i in correos:
