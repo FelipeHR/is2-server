@@ -31,9 +31,8 @@ def holaMundo():
 @app.route('/getForms/<empresa>', methods=['GET'])
 def getForms(empresa):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
-    idEmpresa = cur.fetchone()
-    cur.execute('SELECT Id_encuesta FROM Empresa_Encuesta WHERE Id_Empresa = %s', (idEmpresa[0],))
+    idEmpresa = getId(empresa)
+    cur.execute('SELECT Id_encuesta FROM Empresa_Encuesta WHERE Id_Empresa = %s', (idEmpresa,))
     data = cur.fetchall()
     encuestas = {}
     index = 1
@@ -49,9 +48,27 @@ def getForms(empresa):
     cur.close()
     return jsonify(encuestas)
 
+@app.route('/getInfo/<empresa>', methods= ["GET"])
+def getInfo(empresa):
+    img = getImg(empresa)
+    idEmpresa = getId(empresa)
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT COUNT(*) FROM Empresa_Usuario WHERE Id_Empresa = %s', (idEmpresa,))
+    nUsers = cur.fetchone()[0]
+    print(img)
+    message = {'img': img,
+     'nUsers': nUsers}
+    return jsonify(message)
 
+def getImg(empresa):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT img FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    return cur.fetchone()[0]
 
-
+def getId(empresa):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    return cur.fetchone()[0]
 
 @app.route('/getForm/<formID>', methods = ["GET"])
 def getForm(formID):
@@ -125,8 +142,7 @@ def newRespuesta():
 def newForm(empresa):
     data = request.get_json()
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
-    idEmpresa = cursor.fetchone()[0]
+    idEmpresa = getId(empresa)
     print(empresa+" "+str(idEmpresa))	
     formId=uuid.uuid1().hex
 
