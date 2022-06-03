@@ -15,6 +15,7 @@ import hashlib
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(DevelopmentConfig)
+app.config["JSON_SORT_KEYS"] = True
 mail = Mail(app)
 mysql = MySQL(app)
 @app.route('/')
@@ -46,7 +47,9 @@ def getForms(empresa):
     print(len(data))
     print(len(encuestas))
     cur.close()
-    return jsonify(encuestas)
+    data = jsonify(encuestas)
+    return data
+
 
 @app.route('/getInfo/<empresa>', methods= ["GET"])
 def getInfo(empresa):
@@ -169,13 +172,13 @@ def newForm(empresa):
             mysql.connection.commit()
 
     cursor.close()
-    """cursor = mysql.connection.cursor()
+    cursor = mysql.connection.cursor()
     cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(idEmpresa,))
     correos = cursor.fetchall()
     listaCorreos = []
     for i in correos:
         cursor.execute('SELECT Participa FROM `Usuario` WHERE Correo=%s',(i[0],))
-        participa = cursor.fetchall()[0]
+        participa = cursor.fetchall()[0][0]
         if participa == 1:
             listaCorreos.append(i[0])
     
@@ -183,15 +186,14 @@ def newForm(empresa):
     link="http://localhost:3000/#/form/"+formId
     mensaje = "Participa en la siguiente encuesta!\n" + link
     ## Nuevo ciclo para los correos
-    #for i in listaCorreos:
-    #    sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i.encode('utf-8)).hexdigest(), i)
-    ## 
+    for i in listaCorreos:
+       sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "http://localhost:5000/unsuscribe/" + hashlib.md5(i.encode('utf-8')).hexdigest(), [i])
 
     ##sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
     
     #sendMail('Respuestas encuesta',string,['dapiyih456@idurse.com'])
     ### GENERANDO LINK PARA ENCUESTA 
-    print(formId)"""
+    print(formId)
 
 
     ### retorna el id del formulario para ocuparlo en react
@@ -223,7 +225,7 @@ def newUser():
     cursor.execute("SELECT * FROM Usuario WHERE Correo='{}'".format(data['Correo']))
     usuarios = cursor.fetchall()
     if len(usuarios) != 0:
-        return jsonify("Correo ya registrado")
+        return jsonify({'message':"Correo ya registrado"})
 
     cursor.execute("INSERT INTO Usuario VALUES('{}','{}','{}')".format(data['Correo'],1,hashlib.md5(data['Correo'].encode('utf-8')).hexdigest()))
     cursor.execute("SELECT Id_empresa FROM UsuarioEmpresa")
@@ -233,7 +235,7 @@ def newUser():
     mysql.connection.commit()
     cursor.close()
 
-    response = jsonify("Usuario agregado con exito")
+    response = jsonify( {'message':"Usuario agregado con exito"})
     return response
 
 
