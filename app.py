@@ -127,33 +127,39 @@ def newForm(empresa):
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
     idEmpresa = cursor.fetchone()[0]
-    print(empresa)
+    print(empresa+" "+str(idEmpresa))	
     formId=uuid.uuid1().hex
+
     link="http://localhost:3000/form/"+formId
+
     cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(idEmpresa,formId))
     cursor.execute('INSERT INTO `Encuesta` VALUES(%s,%s,%s,%s)',(formId,str(data['title']),
         str(data['description']),str(datetime.today().strftime('%Y-%m-%d'))))
-    npreguntas = cursor.execute('SELECT * FROM `Pregunta`')
-    nalter = cursor.execute('SELECT * FROM `Alternativa`')
+    
     for i in range(len(data['preguntas'])):
-        cursor.execute('INSERT INTO `Encuesta_Pregunta` VALUES(%s,%s)',(formId,npreguntas))
-        cursor.execute('INSERT INTO `Pregunta` VALUES(%s,%s,%s)',(npreguntas,str(data['preguntas'][i]['title']),
-           i))
+        
+        cursor.execute('INSERT INTO `Pregunta` (Enunciado,Numero_pregunta) VALUES(%s,%s)',(str(data['preguntas'][i]['title']),i))
+        mysql.connection.commit()
+        cursor.execute('SELECT LAST_INSERT_ID()')
+        idPregunta = cursor.fetchone()[0]
+        cursor.execute('INSERT INTO `Encuesta_Pregunta` VALUES(%s,%s)',(formId,idPregunta))
+        mysql.connection.commit()
         for j in range(len(data['preguntas'][i]['alter'])):
-            cursor.execute('INSERT INTO `Pregunta_Alternativa` VALUES(%s,%s)',(npreguntas,nalter))
-            cursor.execute('INSERT INTO `Alternativa` VALUES(%s,%s,%s)',(nalter,str(data['preguntas'][i]['alter'][j]['title']),
-                j))
-            nalter += 1
-        npreguntas += 1 
-    mysql.connection.commit()
+            cursor.execute('INSERT INTO `Alternativa` (Enunciado,Letra) VALUES(%s,%s)',(str(data['preguntas'][i]['alter'][j]['title']),j))
+            mysql.connection.commit()
+            cursor.execute('SELECT LAST_INSERT_ID()')
+            idAlter = cursor.fetchone()[0]
+            cursor.execute('INSERT INTO `Pregunta_Alternativa` VALUES(%s,%s)',(idPregunta,idAlter))
+            mysql.connection.commit()
+
     cursor.close()
-    cursor = mysql.connection.cursor()
+    """cursor = mysql.connection.cursor()
     cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(idEmpresa,))
     correos = cursor.fetchall()
     listaCorreos = []
     for i in correos:
         cursor.execute('SELECT Participa FROM `Usuario` WHERE Correo=%s',(i[0],))
-        participa = cursor.fetchall()[0][0]
+        participa = cursor.fetchall()[0]
         if participa == 1:
             listaCorreos.append(i[0])
     
@@ -169,12 +175,12 @@ def newForm(empresa):
     
     #sendMail('Respuestas encuesta',string,['dapiyih456@idurse.com'])
     ### GENERANDO LINK PARA ENCUESTA 
-    print(formId)
+    print(formId)"""
 
 
     ### retorna el id del formulario para ocuparlo en react
     response = jsonify(formId)
-    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Origin", "*") 
     return response
 
 @app.route("/newEmpresa", methods = ["POST"])
