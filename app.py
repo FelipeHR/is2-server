@@ -178,13 +178,11 @@ def newEmpresa():
     data = request.get_json()
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT Id_empresa FROM 'UsuarioEmpresa'")
-    empresa = []
+    cursor.execute("SELECT * FROM UsuarioEmpresa WHERE Id_Empresa='{}'".format(data['Correo']))
     empresa = cursor.fetchall()
-    if empresa.size() != 0:
-        return jsonify("error")
-    cursor.execute("INSERT INTO 'UsuarioEmpresa' VALUES(%s,%s)", str(data['ID']), str(data['Clave']))
-    ## Deben asociarse todos los correos disponibles a esta empresa
+    if len(empresa) != 0:
+        return jsonify("correo ya registrada")
+    cursor.execute("INSERT INTO UsuarioEmpresa VALUES('{}','{}','{}')".format(data['Username'],data['Clave'],data['Correo']))
     mysql.connection.commit()
     cursor.close()
 
