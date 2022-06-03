@@ -223,8 +223,7 @@ def newUser():
     data = request.get_json()
     cursor = mysql.connection.cursor()
 
-    regex = re.compile(r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
-    if not re.fullmatch(regex, format(data['Correo'])):
+    if not validateMail(format(data['Correo'])):
         return jsonify({'message': "Ingrese un correo valido"})
     
 
@@ -249,6 +248,12 @@ def sendMail(asunto,mensaje, destinatarios):
     msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
     msg.body = mensaje
     mail.send(msg)
+
+def validateMail(correo):
+    regex = re.compile(r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
+    if not re.fullmatch(regex, correo):
+        return False
+    return True
 
 @app.route("/unsuscribe/<md5>")
 def unsuscribe(md5):
