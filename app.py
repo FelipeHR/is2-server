@@ -119,14 +119,14 @@ def newRespuesta():
     cursor.close()
     return(response)
 
-@app.route("/newForm", methods=["POST"])
-def newForm():
+@app.route("/newForm/<empresa>", methods=["POST"])
+def newForm(empresa):
     data = request.get_json()
     cursor = mysql.connection.cursor()
-    Empresa = "UdeC"
+    print(empresa)
     formId=uuid.uuid1().hex
     link="http://localhost:3000/form/"+formId
-    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(Empresa,formId))
+    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(empresa,formId))
     cursor.execute('INSERT INTO `Encuesta` VALUES(%s,%s,%s,%s)',(formId,str(data['title']),
         str(data['description']),str(datetime.today().strftime('%Y-%m-%d'))))
     npreguntas = cursor.execute('SELECT * FROM `Pregunta`')
@@ -144,7 +144,7 @@ def newForm():
     mysql.connection.commit()
     cursor.close()
     cursor = mysql.connection.cursor()
-    cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(Empresa,))
+    cursor.execute('SELECT Correo FROM `Empresa_Usuario` WHERE Id_empresa=%s',(empresa,))
     correos = cursor.fetchall()
     listaCorreos = []
     for i in correos:
