@@ -10,6 +10,7 @@ from config import DevelopmentConfig
 from datetime import datetime
 import uuid ### libreria para generar id
 import hashlib
+import re
 
 
 app = Flask(__name__)
@@ -209,18 +210,23 @@ def newEmpresa():
     cursor.execute("SELECT * FROM UsuarioEmpresa WHERE Id_Empresa='{}'".format(data['Correo']))
     empresa = cursor.fetchall()
     if len(empresa) != 0:
-        return jsonify("correo ya registrada")
+        return jsonify({'message':"Empresa ya registrada"})
     cursor.execute("INSERT INTO UsuarioEmpresa VALUES('{}','{}','{}')".format(data['Username'],data['Clave'],data['Correo']))
     mysql.connection.commit()
     cursor.close()
 
-    response = jsonify("Usuario agregado con exito")
+    response = jsonify({'message':"Usuario agregado con exito"})
     return response
 
 @app.route("/newUser", methods = ["POST"])
 def newUser():
     data = request.get_json()
     cursor = mysql.connection.cursor()
+
+    regex = re.compile(r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
+    if not re.fullmatch(regex, format(data['Correo'])):
+        return jsonify({'message': "Ingrese un correo valido"})
+    
 
     cursor.execute("SELECT * FROM Usuario WHERE Correo='{}'".format(data['Correo']))
     usuarios = cursor.fetchall()
