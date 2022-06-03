@@ -155,6 +155,12 @@ def newForm():
     
     cursor.close()
     link="http://localhost:3000/#/form/"+formId
+    mensaje = "Participa en la siguiente encuesta!\n" + link
+    ## Nuevo ciclo para los correos
+    #for i in listaCorreos:
+    #    sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i), i)
+    ## 
+
     ##sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
     
     #sendMail('Respuestas encuesta',string,['dapiyih456@idurse.com'])
@@ -208,15 +214,9 @@ def newUser():
 
 
 def sendMail(asunto,mensaje, destinatarios):
-### Ciclo para enviar 1 a 1 los correos con el link personalizado para darse de baja. Para volver de hash a correo es HASH.hexdigest()
-    for i in destinatarios:
-        msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = i)
-        msg.body = mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "HTTP://ACASESUPONEQUEVAELLINK/" + hashlib.md5(i)
-        mail.send(msg) 
-### Lo siguiente lo comente porque enviaba el correo masivo
-#    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
-#    msg.body = mensaje
-#    mail.send(msg)
+    msg = Message(asunto, sender = app.config['MAIL_USERNAME'], recipients = destinatarios)
+    msg.body = mensaje
+    mail.send(msg)
 
 mail.init_app(app)
 app.run(debug = True)
