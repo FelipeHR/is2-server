@@ -122,6 +122,60 @@ def getForm(formID):
     return jsonify(message)
 
 
+@app.route('/getFormAnswers/<empresa>/<formID>', methods = ["GET"])
+def getFormAnswers(empresa,formID):
+    cursor = mysql.connection.cursor()
+
+    cursor.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    idEmpresa = cursor.fetchone()[0]
+    cursor.execute("SELECT * FROM Empresa_Encuesta WHERE Id_encuesta = %s AND Id_empresa = %s", (formID, idEmpresa,))
+    
+    if cursor.fetchone() is None: 
+        return ("No corresponde al usuario")
+    
+   
+
+    cursor.execute('SELECT Nombre_encuesta FROM Encuesta WHERE Id_encuesta = %s', (formID,))  
+    titulo = cursor.fetchone()
+    
+    cursor.execute('SELECT Descripcion FROM Encuesta WHERE Id_encuesta = %s', (formID,))
+    descripcion = cursor.fetchone()
+
+    preguntas = [{}]
+    alternativas = [{}]
+    preguntas.pop()
+    alternativas.pop()
+    cursor.execute('SELECT Id_pregunta FROM Encuesta_Pregunta WHERE Id_encuesta = %s', (formID,))
+    preguntasID = cursor.fetchall()
+    
+    print()
+    for i in preguntasID:
+        cursor.execute('SELECT Enunciado FROM Pregunta WHERE Id_pregunta = %s', (i,))
+        tit = cursor.fetchone()
+        cursor.execute('SELECT Id_alternativa FROM Pregunta_Alternativa WHERE Id_pregunta = %s', (i,))
+        alternativasID = cursor.fetchall()
+   
+        for j in alternativasID:
+            cursor.execute('SELECT Enunciado FROM Alternativa WHERE Id_alternativa = %s', (j,))
+            t = cursor.fetchone()
+            cursor.execute("SELECT * FROM Alternativa_Respuesta WHERE Id_alternativa = %s", (j,))
+            nAns = cursor.fetchall()
+           
+            alternativas.append({'title' : t, 'id' : j, 'answers' : len(nAns)})
+            #print("\nSe guardaron las alternativas de ID: ")
+            #print(j)
+        preguntas.append({'title' : tit, 'id' : i, 'alter' : alternativas.copy()})
+        alternativas.clear()
+    #print(preguntas)
+
+    message = {
+        'title' : titulo,
+        'description' : descripcion,
+        'preguntas' : preguntas
+    }
+    #print(message)
+    return jsonify(message)
+
 
 
 @app.route("/newRespuesta", methods=["POST"])
@@ -294,4 +348,4 @@ def login():
             return jsonify(respuesta)
 
 mail.init_app(app)
-app.run(debug = True)
+app.run(host='localhost',debug = True)
