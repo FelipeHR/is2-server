@@ -54,6 +54,15 @@ def getForms(empresa):
     return data
 
 
+@app.route('/getMail/<md5>', methods= ["GET"])
+def getMail(md5):
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT * FROM Usuario WHERE md5_correo = %s', (md5,))
+    correo = cur.fetchone()[0]
+    print (correo)
+    return correo
+
+
 @app.route('/getInfo/<empresa>', methods= ["GET"])
 def getInfo(empresa):
     img = getImg(empresa)
@@ -315,7 +324,7 @@ def validateMail(correo):
         return False
     return True
 
-@app.route("/unsuscribe/<md5>")
+@app.route("/unsuscribe/confirm/<md5>")
 def unsuscribe(md5):
     cursor = mysql.connection.cursor()
     cursor.execute("UPDATE Usuario SET Participa = 0 WHERE md5_correo = '{}'".format(md5))
