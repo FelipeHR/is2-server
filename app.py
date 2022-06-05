@@ -60,7 +60,7 @@ def getMail(md5):
     cur.execute('SELECT * FROM Usuario WHERE md5_correo = %s', (md5,))
     correo = cur.fetchone()[0]
     print (correo)
-    return correo
+    return jsonify(correo)
 
 
 @app.route('/getInfo/<empresa>', methods= ["GET"])
