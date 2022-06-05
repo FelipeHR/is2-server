@@ -1,27 +1,31 @@
 from audioop import cross
 from random import random
-from flask import Flask, jsonify, request
-from flask_cors import CORS
+from traceback import print_tb
+from flask import Flask, jsonify, request, session
+from flask_cors import CORS, cross_origin
 from flask_mail import Mail
 from flask_mail import Message
 from flask import Flask,render_template, request
 from flask_mysqldb import MySQL
+from numpy import empty
 from config import DevelopmentConfig
 from datetime import datetime
 import uuid ### libreria para generar id
 import hashlib
 import re
-
+import flask
 
 app = Flask(__name__)
 CORS(app)
 app.config.from_object(DevelopmentConfig)
 app.config["JSON_SORT_KEYS"] = True
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
 mail = Mail(app)
 mysql = MySQL(app)
-@app.route('/')
+
+@app.route('/hello')
 def main():
-    return "Hello Flask!"
+    return session
 
 
 @app.route('/holaMundo')
@@ -45,8 +49,6 @@ def getForms(empresa):
         encuesta = {'title': consulta[0][1], 'description': consulta[0][2], 'id': consulta[0][0], 'date': {'year': fecha[0], 'month': fecha[1], 'day': fecha[2]}}
         encuestas["Encuesta "+str(index)] = encuesta
         index += 1
-    print(len(data))
-    print(len(encuestas))
     cur.close()
     data = jsonify(encuestas)
     return data
@@ -59,7 +61,6 @@ def getInfo(empresa):
     cur = mysql.connection.cursor()
     cur.execute('SELECT COUNT(*) FROM Empresa_Usuario WHERE Id_Empresa = %s', (idEmpresa,))
     nUsers = cur.fetchone()[0]
-    print(img)
     message = {'img': img,
      'nUsers': nUsers}
     return jsonify(message)
@@ -73,6 +74,11 @@ def getId(empresa):
     cur = mysql.connection.cursor()
     cur.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
     return cur.fetchone()[0]
+
+def getEmpresa(correo):
+    cur = mysql.connection.cursor()
+    cur.execute('SELECT Username FROM UsuarioEmpresa WHERE Correo = %s', (correo,))
+    return cur.fetchone()
 
 @app.route('/getForm/<formID>', methods = ["GET"])
 def getForm(formID):
@@ -262,6 +268,30 @@ def unsuscribe(md5):
     mysql.connection.commit()
     cursor.close()
     return "correo dado de baja"
+
+@app.route("/login",methods = ["POST"])
+def login():
+    data = request.get_json()
+    cursor = mysql.connection.cursor()
+    username = data['correo']
+    password = data['contraseña']
+    respuesta = {}
+    empresa = getEmpresa(username)
+    respuesta['username'] = empresa
+    cursor.execute('SELECT Contraseña FROM `UsuarioEmpresa` WHERE Correo = %s',(username,))
+    consulta = cursor.fetchall()
+    if (consulta == ()):
+        respuesta['message'] = "Correo no registrado"
+        return jsonify(respuesta)
+    else:
+        contraseña2 = hashlib.md5((consulta[0][0]).encode('utf-8')).hexdigest()
+        if contraseña2 == password:
+            respuesta['message'] = "Login exitoso"
+            print(session)
+            return jsonify(respuesta)
+        else: 
+            respuesta['message'] = "Contraseña incorrecta"
+            return jsonify(respuesta)
 
 mail.init_app(app)
 app.run(debug = True)
