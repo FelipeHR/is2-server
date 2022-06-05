@@ -60,7 +60,7 @@ def getMail(md5):
     cur.execute('SELECT * FROM Usuario WHERE md5_correo = %s', (md5,))
     correo = cur.fetchone()[0]
     print (correo)
-    return jsonify(correo)
+    return jsonify(correo)  
 
 
 @app.route('/getInfo/<empresa>', methods= ["GET"])
@@ -251,13 +251,12 @@ def newForm(empresa):
         participa = cursor.fetchall()[0][0]
         if participa == 1:
             listaCorreos.append(i[0])
-    
     cursor.close()
     link="http://localhost:3000/#/form/"+formId
     mensaje = "Participa en la siguiente encuesta!\n" + link
     ## Nuevo ciclo para los correos
     for i in listaCorreos:
-       sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "http://localhost:5000/unsuscribe/" + hashlib.md5(i.encode('utf-8')).hexdigest(), [i])
+       sendMail("Encuesta: "+str(data['title']), mensaje + "\n\nPara darte de baja del servicio de correos haz click aqui -> " + "http://localhost:3000/#/unsuscribe/" + hashlib.md5(i.encode('utf-8')).hexdigest(), [i])
 
     ##sendMail("Encuesta: "+str(data['title']),"Participa en la siguiente encuesta!\n"+link,listaCorreos)
     
