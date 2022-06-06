@@ -248,9 +248,11 @@ def newForm(empresa):
     listaCorreos = []
     for i in correos:
         cursor.execute('SELECT Participa FROM `Usuario` WHERE Correo=%s',(i[0],))
-        participa = cursor.fetchall()[0][0]
-        if participa == 1:
-            listaCorreos.append(i[0])
+        participa = cursor.fetchall()
+        if(participa != ()):
+            print(participa)
+            if participa[0][0] == 1:
+                listaCorreos.append(i[0])
     cursor.close()
     link="http://localhost:3000/#/form/"+formId
     mensaje = "Participa en la siguiente encuesta!\n" + link
