@@ -182,7 +182,6 @@ def getFormAnswers(empresa,formID):
         'description' : descripcion,
         'preguntas' : preguntas
     }
-    print(message)
     return jsonify(message)
 
 
