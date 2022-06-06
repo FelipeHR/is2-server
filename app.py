@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request, session
 from flask_cors import CORS, cross_origin
 from flask_mail import Mail
 from flask_mail import Message
-from flask import Flask,render_template, request
+from flask import Flask,render_template, request, abort
 from flask_mysqldb import MySQL
 from numpy import empty
 from config import DevelopmentConfig
@@ -273,14 +273,20 @@ def newForm(empresa):
 
 @app.route("/newEmpresa", methods = ["POST"])
 def newEmpresa():
+    print("REGISTRANDO EMPRESA")
     data = request.get_json()
+    print(data)
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT * FROM UsuarioEmpresa WHERE Id_Empresa='{}'".format(data['Correo']))
+    cursor.execute("SELECT * FROM UsuarioEmpresa WHERE Correo='{}' OR Username='{}'".format(data['Correo'],data['Username']))
     empresa = cursor.fetchall()
     if len(empresa) != 0:
-        return jsonify({'message':"Empresa ya registrada"})
-    cursor.execute("INSERT INTO UsuarioEmpresa VALUES('{}','{}','{}')".format(data['Username'],data['Clave'],data['Correo']))
+        abort(404)
+
+    nombre = data['Username']
+    contraseña = data['Clave']
+    correo = data['Correo']
+    cursor.execute("INSERT INTO UsuarioEmpresa (Username,Contraseña,Correo) VALUES('{}','{}','{}')".format(nombre,contraseña,correo))
     mysql.connection.commit()
     cursor.close()
 
