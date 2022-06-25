@@ -68,7 +68,7 @@ def getInfo(empresa):
     img = getImg(empresa)
     idEmpresa = getId(empresa)
     cur = mysql.connection.cursor()
-    cur.execute('SELECT COUNT(*) FROM Empresa_Usuario WHERE Id_Empresa = %s', (idEmpresa,))
+    cur.execute('SELECT COUNT(*) FROM Usuario')
     nUsers = cur.fetchone()[0]
     message = {'img': img,
      'nUsers': nUsers}
@@ -139,9 +139,9 @@ def getFormAnswers(empresa,formID):
     idEmpresa = cursor.fetchone()[0]
     cursor.execute("SELECT * FROM Empresa_Encuesta WHERE Id_encuesta = %s AND Id_empresa = %s", (formID, idEmpresa,))
     
-    if cursor.fetchone() is None: 
+    empresa_encuesta=cursor.fetchall()
+    if empresa_encuesta is None: 
         return ("No corresponde al usuario")
-    
    
 
     cursor.execute('SELECT Nombre_encuesta FROM Encuesta WHERE Id_encuesta = %s', (formID,))  
@@ -182,7 +182,6 @@ def getFormAnswers(empresa,formID):
         'description' : descripcion,
         'preguntas' : preguntas
     }
-    #print(message)
     return jsonify(message)
 
 
