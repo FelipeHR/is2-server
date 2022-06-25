@@ -363,5 +363,10 @@ def login():
             respuesta['message'] = "Contraseña incorrecta"
             return jsonify(respuesta)
 
+@app.route("/deleteForm/<idForm>",methods = ["GET"])
+def deleteForm(idForm):
+    response = jsonify( {'message':"Se elimino la wea "+idForm})
+    return response
+
 mail.init_app(app)
 app.run(host='localhost',debug = True)
