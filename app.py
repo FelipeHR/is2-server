@@ -45,6 +45,8 @@ def getForms(empresa):
     for i in data:
         cur.execute('SELECT * FROM Encuesta WHERE Id_encuesta = %s', (i[0],))
         consulta = cur.fetchall()
+        print("aki")
+        print(consulta[0][3])
         fecha = consulta[0][3].split('-')
         encuesta = {'title': consulta[0][1], 'description': consulta[0][2], 'id': consulta[0][0], 'date': {'year': fecha[0], 'month': fecha[1], 'day': fecha[2]}}
         encuestas["Encuesta "+str(index)] = encuesta
@@ -77,11 +79,15 @@ def getInfo(empresa):
 def getImg(empresa):
     cur = mysql.connection.cursor()
     cur.execute("SELECT img FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
-    return cur.fetchone()[0]
+    r = cur.fetchone()[0]
+    print (r)
+    return r
 
 def getId(empresa):
     cur = mysql.connection.cursor()
-    cur.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    cur.execute("SELECT Id_empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    print("äkiiiii")
+    #print(cur.fetchone())
     return cur.fetchone()[0]
 
 def getEmpresa(correo):
@@ -135,7 +141,7 @@ def getForm(formID):
 def getFormAnswers(empresa,formID):
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT Id_Empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
+    cursor.execute("SELECT Id_empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
     idEmpresa = cursor.fetchone()[0]
     cursor.execute("SELECT * FROM Empresa_Encuesta WHERE Id_encuesta = %s AND Id_empresa = %s", (formID, idEmpresa,))
     
@@ -212,6 +218,8 @@ def newRespuesta():
 
 @app.route("/newForm/<empresa>", methods=["POST"])
 def newForm(empresa):
+
+    print("hola ingresando")
     data = request.get_json()
     cursor = mysql.connection.cursor()
     idEmpresa = getId(empresa)
@@ -220,9 +228,11 @@ def newForm(empresa):
 
     link="http://localhost:3000/form/"+formId
 
-    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(idEmpresa,formId))
     cursor.execute('INSERT INTO `Encuesta` VALUES(%s,%s,%s,%s)',(formId,str(data['title']),
         str(data['description']),str(datetime.today().strftime('%Y-%m-%d'))))
+    cursor.execute('INSERT INTO `Empresa_Encuesta` VALUES(%s,%s)',(idEmpresa,str(formId)))
+    
+        
     
     for i in range(len(data['preguntas'])):
         
@@ -364,6 +374,12 @@ def login():
 
 @app.route("/deleteForm/<idForm>",methods = ["GET"])
 def deleteForm(idForm):
+    cursor = mysql.connection.cursor()
+    cursor.execute('DELETE FROM `Encuesta` WHERE Id_encuesta = %s', (str(idForm),))
+   
+    mysql.connection.commit()
+    cursor.close()
+
     response = jsonify( {'message':"Se elimino la wea "+idForm})
     return response
 
