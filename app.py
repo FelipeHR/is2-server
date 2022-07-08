@@ -79,16 +79,20 @@ def getInfo(empresa):
 def getImg(empresa):
     cur = mysql.connection.cursor()
     cur.execute("SELECT img FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
-    r = cur.fetchone()[0]
-    print (r)
-    return r
+    p = cur.fetchone()
+    print(p)
+    if p == None:
+        return
+    return p[0]
 
 def getId(empresa):
     cur = mysql.connection.cursor()
     cur.execute("SELECT Id_empresa FROM UsuarioEmpresa WHERE Username = %s", (empresa,))
-    print("äkiiiii")
-    #print(cur.fetchone())
-    return cur.fetchone()[0]
+    p = cur.fetchone()
+    print(p)
+    if p == None:
+        return
+    return p[0]
 
 def getEmpresa(correo):
     cur = mysql.connection.cursor()
@@ -219,7 +223,6 @@ def newRespuesta():
 @app.route("/newForm/<empresa>", methods=["POST"])
 def newForm(empresa):
 
-    print("hola ingresando")
     data = request.get_json()
     cursor = mysql.connection.cursor()
     idEmpresa = getId(empresa)
@@ -263,6 +266,7 @@ def newForm(empresa):
             if participa[0][0] == 1:
                 listaCorreos.append(i[0])
     cursor.close()
+    print(listaCorreos)
     link="http://localhost:3000/#/form/"+formId
     mensaje = "Participa en la siguiente encuesta!\n" + link
     ## Nuevo ciclo para los correos
