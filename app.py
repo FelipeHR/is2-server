@@ -388,4 +388,4 @@ def deleteForm(idForm):
     return response
 
 mail.init_app(app)
-app.run(host='localhost',debug = True)
+app.run(debug = True)
