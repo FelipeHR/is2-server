@@ -215,7 +215,7 @@ def newRespuesta():
     cursor.execute('INSERT INTO `Respuesta` VALUES(%s)', (str(nAnswers)))
     for i in data:
         print(i)
-        cursor.execute('INSERT INTO `Alternativa_Respuesta` VALUES (%s, %s)', (str(i[0]), str(nAnswers)) )
+        cursor.execute('INSERT INTO `Alternativa_Respuesta` VALUES (%s, %s)', (str(i), str(nAnswers)) )
 
     mysql.connection.commit()
     cursor.close()
