@@ -6,6 +6,7 @@ class Config(object):
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = 'BGdskVuKmwlMw4tqpLGo'
     MYSQL_DB = 'railway'
+    MYSQL_PORT = 7517
 
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
