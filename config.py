@@ -2,10 +2,10 @@ from distutils.debug import DEBUG
 import os
 
 class Config(object):
-    MYSQL_HOST = 'remotemysql.com'
-    MYSQL_USER = 'givcGg9Yql'
-    MYSQL_PASSWORD = 'LHJOG3t1Ja'
-    MYSQL_DB = 'givcGg9Yql'
+    MYSQL_HOST = 'containers-us-west-85.railway.app'
+    MYSQL_USER = 'root'
+    MYSQL_PASSWORD = 'BGdskVuKmwlMw4tqpLGo'
+    MYSQL_DB = 'railway'
 
     MAIL_SERVER = 'smtp.gmail.com'
     MAIL_PORT = 587
