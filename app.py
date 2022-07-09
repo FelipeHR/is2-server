@@ -388,4 +388,6 @@ def deleteForm(idForm):
     return response
 
 mail.init_app(app)
-app.run(host='localhost',debug = True)
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
