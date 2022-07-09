@@ -386,8 +386,8 @@ def deleteForm(idForm):
 
     response = jsonify( {'message':"Se elimino la wea "+idForm})
     return response
-
-mail.init_app(app)
-if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=8080)
+app.run(debug=True)
+#mail.init_app(app)
+#if __name__ == "__main__":
+#    from waitress import serve
+#    serve(app, host="0.0.0.0", port=8080)
